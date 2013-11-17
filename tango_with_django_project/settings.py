@@ -1,7 +1,8 @@
 # Django settings for tango_with_django_project project.
 
 import os
-PROJECT_PATH = os.getcwd()
+SETTINGS_PATH = os.path.dirname(__file__)
+PROJECT_PATH = os.path.join(SETTINGS_PATH, os.pardir)
 TEMPLATE_PATH = os.path.join(PROJECT_PATH, 'templates')
 
 DEBUG = True
