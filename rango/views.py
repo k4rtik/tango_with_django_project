@@ -1,8 +1,13 @@
-from django.http import HttpResponse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 
 from rango.models import Category, Page
+
+def encode_url(name):
+    return name.replace(' ', '_')
+
+def decode_url(url):
+    return url.replace('_', ' ')
 
 def index(request):
     # Obtain the context from the HTTP request.
@@ -10,18 +15,19 @@ def index(request):
 
     # Query for categories - add the list to our context dictionary.
     category_list = Category.objects.order_by('-likes')[:5]
-    context_dict = {'categories': category_list}
+    top_pages = Page.objects.order_by('-views')[:5]
+    context_dict = {'categories': category_list,
+                    'top_pages': top_pages}
 
-    # We loop through each category returned, and create a URL attribute.
-    # This attribute stores an encoded URL (e.g. spaces replaced with underscores).
     for category in category_list:
-        category.url = category.name.replace(' ', '_')
+        category.url = encode_url(category.name)
 
     # Render the response and return to the client.
     return render_to_response('rango/index.html', context_dict, context)
 
 def about(request):
     return render_to_response('rango/about.html')
+
 
 def category(request, category_name_url):
     # Request our context from the request passed to us.
@@ -30,7 +36,7 @@ def category(request, category_name_url):
     # Change underscores in the category name to spaces.
     # URLs don't handle spaces well, so we encode them as underscores.
     # We can then simply replace the underscores with spaces again to get the name.
-    category_name = category_name_url.replace('_', ' ')
+    category_name = decode_url(category_name_url)
 
     # Create a context dictionary which we can pass to the template rendering engine.
     # We start by containing the name of the category passed by the user.
