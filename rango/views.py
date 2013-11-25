@@ -71,6 +71,7 @@ def category(request, category_name_url):
     # Go render the response and return it to the client.
     return render_to_response('rango/category.html', context_dict, context)
 
+@login_required
 def add_category(request):
     # Get the context from the request.
     context = RequestContext(request)
@@ -98,6 +99,7 @@ def add_category(request):
     # Render the form with error messages (if any).
     return render_to_response('rango/add_category.html', {'form': form}, context)
 
+@login_required
 def add_page(request, category_name_url):
     context = RequestContext(request)
 
@@ -195,6 +197,7 @@ def register(request):
 def user_login(request):
     # Like before, obtain the context for the user's request.
     context = RequestContext(request)
+    context_dict = {}
 
     # If the request is a HTTP POST, try to pull out the relevant information.
     if request.method == 'POST':
@@ -223,7 +226,8 @@ def user_login(request):
         else:
             # Bad login details were provided. So we can't log the user in.
             print "Invalid login details: {0}, {1}".format(username, password)
-            return HttpResponse("Invalid login details supplied.")
+            context_dict['bad_details'] = True
+            return render_to_response('rango/login.html', context_dict, context)
 
     # The request is not a HTTP POST, so display the login form.
     # This scenario would most likely be a HTTP GET.
