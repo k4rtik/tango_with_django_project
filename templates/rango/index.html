@@ -20,9 +20,9 @@
         {% endif %}
 
         <h2>Top Pages</h2>
-        {% if top_pages %}
+        {% if pages %}
             <ul>
-                {% for page in top_pages %}
+                {% for page in pages %}
                 <li>{{ page.title }}</li>
                 {% endfor %}
             </ul>

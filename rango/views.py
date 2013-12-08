@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponseRedirect, HttpResponse
@@ -20,19 +22,41 @@ def index(request):
 
     # Query for categories - add the list to our context dictionary.
     category_list = Category.objects.order_by('-likes')[:5]
-    top_pages = Page.objects.order_by('-views')[:5]
+    pages = Page.objects.order_by('-views')[:5]
     context_dict = {'categories': category_list,
-                    'top_pages': top_pages}
+                    'pages': pages}
 
     for category in category_list:
         category.url = encode_url(category.name)
 
-    # Render the response and return to the client.
+    if request.session.get('last_visit'):
+        # The session has a value for the last visit
+        last_visit_time = request.session.get('last_visit')
+        visits = request.session.get('visits', 0)
+
+        if (datetime.now() - datetime.strptime(last_visit_time[:-7], "%Y-%m-%d %H:%M:%S")).days > 0:
+            request.session['visits'] = visits + 1
+            request.session['last_visit'] = str(datetime.now())
+    else:
+        # The get returns None, and the session does not have a value for the last visit.
+        request.session['last_visit'] = str(datetime.now())
+        request.session['visits'] = 1
+    #### END NEW CODE ####
+
+    # Render and return the rendered response back to the user.
     return render_to_response('rango/index.html', context_dict, context)
 
 def about(request):
     context = RequestContext(request)
-    return render_to_response('rango/about.html', {}, context)
+    # If the visits session varible exists, take it and use it.
+    # If it doesn't, we haven't visited the site so set the count to zero.
+    if request.session.get('visits'):
+        count = request.session.get('visits')
+    else:
+        count = 0
+
+    # remember to include the visit data
+    return render_to_response('rango/about.html', {'visits': count}, context)
 
 
 def category(request, category_name_url):
